@@ -313,11 +313,20 @@ fit_minmax_window <- function(x, posix, minmax, time_length, plot_it=FALSE){
     # time as it runs in about 2.5 seconds / patient.
   # See next function.
 
+# #' @export
+# Mode <- function(x) {
+#   ux <- unique(x)
+#   ux[which.max(tabulate(match(x, ux)))]
+# }#https://stackoverflow.com/questions/2547402/is-there-a-built-in-function-for-finding-the-mode
+  #problem: in some cases this converts things (like difftime) to numeric
+  #I would like to keep the formatting.
+  
 #' @export
-Mode <- function(x) {
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
-}#https://stackoverflow.com/questions/2547402/is-there-a-built-in-function-for-finding-the-mode
+Mode <- function(x){ 
+  tt <- table(x)
+  maxtt <- names(tt)[which.max(tt)]
+  x[which(x==maxtt)[1]]
+}
 
 
 #' Get M10, L5 or other window summaries, in linear time
@@ -329,6 +338,7 @@ fit_fast_minmax_window <- function(
   x, posix,
   minmax, #max or min function
   time_length = 1*hr1, #in difftime
+  return_type = 'value',
   nonzero_min_proportion = 0.1,
   max_gap = 2 * hr1 #largest time gap allowed.
   ){  
@@ -393,7 +403,9 @@ fit_fast_minmax_window <- function(
   # where upper interval endpoint is closed.
 
   #Itialize a starting & ending point
+  best_start <-
   start_i <- 1
+  best_end <-
   end_i <- max(which(posix < posix[start_i] + time_length))
   if(length(end_i) == 0){
     warning('no valid intervals, returning NA'); return(NA)
@@ -427,6 +439,10 @@ fit_fast_minmax_window <- function(
     }else{
       #update minmaxW, and increase left index to move to next valid start.
       mean_j <- sum_j / n_j
+      if(minmax(minmaxW, mean_j) == mean_j){
+        best_start <- start_i
+        best_end <- end_i
+      }
       minmaxW <- minmax(minmaxW, mean_j)
       
       if(end_i==lenx) break()
@@ -447,7 +463,14 @@ fit_fast_minmax_window <- function(
   }
   if(j == 3*lenx) warning('search concluded without an answer')
 
-  return(minmaxW)
+  if(return_type=='full_indeces') return(best_start:best_end)
+  if(return_type=='endpoints') return(c('start'=best_start, 'end'=best_end))
+  if(return_type=='value') return(minmaxW)
+  if(return_type=='value+endpoints') return(c(
+    'value'=minmaxW,'start'=best_start, 'end'=best_end))
+  if(return_type=='full_values') return(x[best_start:best_end])
+
+  stop('invalid return_type')
 } 
 
 

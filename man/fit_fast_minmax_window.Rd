@@ -11,6 +11,7 @@ fit_fast_minmax_window(
   posix,
   minmax,
   time_length = 1 * hr1,
+  return_type = "value",
   nonzero_min_proportion = 0.1,
   max_gap = 2 * hr1
 )
