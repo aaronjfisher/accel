@@ -181,7 +181,7 @@ align_time <- function(m,
         filter(V1 < V2) %>% 
         mutate(id = paste0(V1,'-',V2)) %>%  #must come after V1 < V2 sort!
         filter(!duplicated(id)) %>% 
-        select(-id)
+        dplyr::select(-c('id'))
       if(nrow(cb) > max_combn) cb <- cb[1:max_combn,]
 
       warning('n-choose-2 is larger than max_combn (',(choose(n,2)),' > ',
