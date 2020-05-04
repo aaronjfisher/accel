@@ -213,13 +213,20 @@ align_time <- function(m,
       #convert to var, and then to biased var (varb).
       (1/2) * mean(dd) * (n-1)/n 
     }
-    if(abs(convert_rowdiffs_to_bound(rowDiffsProposed)  -
-      get_varb_noise(m_iter)) > 10^-10){
-      stop('error in lower bound conversion')
-    }
-    mean_varb_resid$lwr_bound <- convert_rowdiffs_to_bound(rowDiffsBest) 
+    mean_varb_resid$lwr_bound <- convert_rowdiffs_to_bound(rowDiffsBest)
 
-    if(any(unlist(mean_varb_resid) < mean_varb_resid$lwr_bound)) stop('lower bound error')
+        
+    if(ncb <= max_combn){
+      if(abs(
+        convert_rowdiffs_to_bound(rowDiffsProposed)  -
+        get_varb_noise(m_iter))> 10^-10){
+          stop('error in lower bound conversion')
+      }
+      if(any(unlist(mean_varb_resid) < mean_varb_resid$lwr_bound)) stop('lower bound error')
+    }
+    
+    if( (ncb > max_combn) & mean_varb_resid$proposed < mean_varb_resid$lwr_bound) warning('Approximate lower bound is higher than returned solution.')
+    
     
   }
 
